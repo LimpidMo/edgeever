@@ -996,6 +996,7 @@ function AiSidebarSession({
         : turn));
       if (event.type === "error" && event.message) {
         setError(event.message === "note_access_unavailable" ? t("aiAssistant.sidebar.noteAccessUnavailable")
+          : event.message === "workbuddy_credentials_unavailable" ? t("aiAssistant.agentSource.workbuddyCredentialsUnavailable")
           : event.message === "needs_login" ? t(localAdapterId === "workbuddyCn" || localAdapterId === "workbuddyIntl"
             ? "aiAssistant.sidebar.workbuddyLoginRequired" : "aiAssistant.sidebar.localLoginRequired")
             : event.message === "agent_refused" ? t("aiAssistant.sidebar.agentRefused") : event.message);
@@ -1004,6 +1005,9 @@ function AiSidebarSession({
         active.current = null;
         locked.current = false;
         setBusy(false);
+        // Local agents write through MCP, outside the renderer's query cache.
+        // Also refresh failed runs, which may have completed some writes.
+        void onCompanionNotesChanged?.().catch(() => undefined);
       }
     }
   };
